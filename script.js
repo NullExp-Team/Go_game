@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function handleCellClick(event) {
         const cell = event.target;
         const index = cell.getAttribute("data-index");
-        cell.classList.add("black");
+        cell.classList.add("zero");
 
     }
 
@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function resetGame() {
         const cells = document.querySelectorAll(".grid-cell");
         cells.forEach(function (cell) {
-            cell.classList.remove("black", "white");
+            cell.classList.remove("zero", "cross");
         });
     }
 
