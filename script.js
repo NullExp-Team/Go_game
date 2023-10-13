@@ -7,6 +7,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const cube = document.querySelector(".Cube");
     const transitionOverlay = document.getElementById("transition-overlay");
 
+    let player1Score = 0;
+    let PCScore = 0;
+    let currentPlayer = 1;
+
     cube.addEventListener("click", function () {
         setTimeout(() => {
             cube.classList.add("hide");
@@ -43,34 +47,59 @@ document.addEventListener("DOMContentLoaded", function () {
     // Обработчик изменения выбора размера доски
     function handleBoardSizeChange() {
         initializeBoard();
+        resetGame();
     }
 
     // Добавьте слушатель события для выпадающего списка
     const boardSizeSelect = document.getElementById("board-size");
     boardSizeSelect.addEventListener("change", handleBoardSizeChange);
 
-    // Инициализируем доску при загрузке страницы
-    initializeBoard();
-
     function handleCellClick(event) {
+        // const cell = event.target;
+        // const index = cell.getAttribute("data-index");
+        // cell.classList.add("zero");
+        // cell.classList.add("cross");
+
         const cell = event.target;
         const index = cell.getAttribute("data-index");
-        cell.classList.add("zero");
-        // cell.classList.add("cross");
+        
+        if (!cell.classList.contains("zero") && !cell.classList.contains("cross")) {
+            if (currentPlayer === 1) {
+                cell.classList.add("zero");
+                player1Score++;
+                updatePlayer1Score();
+            } else if (currentPlayer === 2) {
+                cell.classList.add("cross");
+                PCScore++; 
+                updatePCScore();
+            }
+
+            currentPlayer = currentPlayer === 1 ? 2 : 1;
+        }
     }
 
     board.addEventListener("click", handleCellClick);
 
-    // Функция обновления отображения статуса игры
-    function updateStatus(message) {
-        status.textContent = message;
+    function updatePlayer1Score() {
+        const player1ScoreElement = document.getElementById("player1-score");
+        player1ScoreElement.textContent = `You: ${player1Score}`;
     }
+    
+    function updatePCScore() {
+        const PCScoreElement = document.getElementById("PC-score");
+        PCScoreElement.textContent = `PC: ${PCScore}`;
+    }    
 
     function resetGame() {
         const cells = document.querySelectorAll(".grid-cell");
         cells.forEach(function (cell) {
             cell.classList.remove("zero", "cross");
         });
+
+        player1Score = 0;
+        PCScore = 0;
+        updatePlayer1Score();
+        updatePCScore();
     }
 
     resetButton.addEventListener("click", resetGame);

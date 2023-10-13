@@ -33,7 +33,7 @@
         </div>
 
         <div id = "game-container">
-            <body>
+            <body id="game-content">
                 <h1 class="purples">Go game</h1>
                 <div id="controls">
                     <label for="board-size">Choose the board size:</label>
@@ -46,9 +46,13 @@
 
                 <div id="game-board"></div>
 
-                <button> Сбросить игру</button>
+                <button id="reset-button"> Сбросить игру</button>
 
-                <div id="status"></div>
+                <div id="score-container">
+                    <div id="player1-score">You: 0</div>
+                    <div id="PC-score">PC: 0</div>
+                </div>
+                
             </body>
         </div>
 
