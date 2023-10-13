@@ -2,6 +2,12 @@
     display: none;
 }
 
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+} 
+
 @font-face {
     font-family: 'Rocher';
     src: url(https://assets.codepen.io/9632/RocherColorGX.woff2);
@@ -25,6 +31,11 @@ h1 {
 @font-palette-values --Purples {
     font-family: Rocher;
     base-palette: 6;
+}
+
+@font-palette-values --Mint {
+    font-family: Rocher;
+    base-palette: 7;
 }
 
 .purples {
@@ -127,19 +138,29 @@ h1 {
     font-size: 18px;
 }
 
-#reset-button {
-    font-size: 16px;
-    padding: 10px 20px;
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    cursor: pointer;
-    margin-top: 10px;
-    border-radius: 999px;
+@import url('https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap');
+
+button{
+  padding: 20px 25px;
+  background-color: #050801;
+  color: #03e9f4;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  letter-spacing: 4px;
+  overflow: hidden;
+  transition: 0.5s;
+  cursor: pointer;
 }
 
-#reset-button:hover {
-    background-color: #0056b3;
+button:hover{
+    background: #03e9f4;
+    color: #050801;
+    box-shadow: 0 0 5px #03e9f4,
+                0 0 25px #03e9f4,
+                0 0 50px #03e9f4,
+                0 0 200px #03e9f4;
+     -webkit-box-reflect:below 1px linear-gradient(transparent, #0005);
 }
 
 #made-by {
