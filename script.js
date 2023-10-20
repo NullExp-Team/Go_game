@@ -83,6 +83,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function handleBoardSizeChange() {
         initializeBoard();
         resetGame();
+        resetGame();
     }
 
     // Добавьте слушатель события для выпадающего списка
