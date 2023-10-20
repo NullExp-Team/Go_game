@@ -10,7 +10,10 @@ new_game :-
     write('[].'),
     told.
 
-save_to_file(Board, Invalid_move) :-
+save_to_file :-
+    state(Board),
+    invalid(Invalid_move),
+
     tell('state.txt'),
     write(Board),write('.'),
     told,
@@ -41,16 +44,17 @@ game(Pos) :-
 ask_player(Pos) :-
     read_file,
     (state(Board); Board=[-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-]),
-    (invalid(Invalid_move); Invalid_move=[]),
     show_board(Board),nl,
     S=0,
     S1=0,
+    (invalid(Invalid_move); Invalid_move=[]),
     move_player1(Board,S,S1,Invalid_move, Pos).
 
 move_player1(Board,S,S1,Invalid_move, Pos):-
       Player = x,
       replace(Board, Pos,Player, NextBoard),
-        save_to_file(NextBoard, Invalid_move),
+      (state(B), retract(state(B)), assertz(state(NextBoard)); assertz(state(NextBoard))),
+      (invalid(I), retract(invalid(I)), assertz(invalid(Invalid_move)); assertz(invalid(Invalid_move))),
       show_board(NextBoard),
       write('Player X :'),write(S),nl,write('Player O :'),write(S1),nl,
       Opponent=o,
@@ -75,7 +79,7 @@ check_winpose(Player,Opponent,Board,Counter,S,S1,Invalid_move):-
     Counter1 is Counter+1,
     check_winpose(Player,Opponent,Board,Counter1,S,S1,Invalid_move);
     Opponent = o, move_player2(Board,S,S1,Invalid_move);
-    Opponent = x, save_to_file(Board, Invalid_move), sleep(5), halt.
+    Opponent = x, save_to_file, halt.
 
 
 winpose(Y,Player, Opponent,Board,Pos,Opp_list,Neighbour,S,S1,Invalid_move):-
@@ -167,7 +171,7 @@ remove_opponent(Counter,Len1 ,Opponent,Board,Opp_list,Neb_List,S,S1,Invalid_move
 update_board(Opponent,Board,X,X2,Invalid_move):-
      nl,show_board(Board),
      Opponent = o,incr(X, X1),write('Player X :'),write(X1),nl,write('Player O :'),write(X2),nl, move_player2(Board,X1,X2,Invalid_move);
-    Opponent = x,incr(X2, X3),write('Player X :'),write(X),nl,write('Player O :'),write(X3),nl, save_to_file(Board, Invalid_move), sleep(5), halt.
+    Opponent = x,incr(X2, X3),write('Player X :'),write(X),nl,write('Player O :'),write(X3),nl, save_to_file, halt.
 
 incr(X, X1) :-
     X1 is X+1
@@ -363,9 +367,8 @@ move_player_2(NextBoard,S,S1,Pos,Invalid_move):-
       write(Pos),nl,
       Player = o,
       replace(NextBoard, Pos, Player, Board),
-      save_to_file(Board, Invalid_move),
-      state(BBB),
-        write(BBB),
+        (state(B), retract(state(B)), assertz(state(Board)); assertz(state(Board))),
+      (invalid(I), retract(invalid(I)), assertz(invalid(Invalid_move)); assertz(invalid(Invalid_move))),
       show_board(Board),
       write('Player X :'),write(S),nl,write('Player O :'),write(S1),nl,
       Opponent=x,

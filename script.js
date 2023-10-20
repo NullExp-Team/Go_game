@@ -1,7 +1,35 @@
+var values = ['-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-']
+
 document.addEventListener("DOMContentLoaded", function () {
     const board = document.getElementById("game-board");
     const status = document.getElementById("status");
     const resetButton = document.getElementById("reset-button");
+
+    const gameContainer = document.getElementById("game-container");
+    const cube = document.querySelector(".Cube");
+    const transitionOverlay = document.getElementById("transition-overlay");
+
+    let player1Score = 0;
+    let PCScore = 0;
+    let currentPlayer = 1;
+
+    cube.addEventListener("click", function () {
+        let xhr = new XMLHttpRequest();
+        xhr.open('GET', 'http://127.0.0.1:5000/new_game');
+        xhr.send();
+
+        setTimeout(() => {
+            cube.classList.add("hide");
+        }, 2000)
+
+        transitionOverlay.classList.add("show");
+
+        setTimeout(() => {
+            cube.style.display = "none";
+            transitionOverlay.classList.remove("show");
+            gameContainer.style.display = "block";
+        }, 2500);
+    });
 
     function initializeBoard() {
         const boardSizeSelect = document.getElementById("board-size");
@@ -14,6 +42,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         for (let i = 0; i < selectedSize; i++) {
             const cell = document.createElement("div");
+            cell.id = "cell_" + i;
             cell.classList.add("grid-cell");
             cell.setAttribute("data-index", i);
             board.appendChild(cell);
@@ -22,39 +51,87 @@ document.addEventListener("DOMContentLoaded", function () {
 
     initializeBoard();
 
+    function updateBoard() {
+        const boardSizeSelect = document.getElementById("board-size");
+        const selectedSize = parseInt(boardSizeSelect.value, 10);
+        console.log(values)
+        for (let i = 0; i < selectedSize; i++) {
+            let cell = document.getElementById('cell_' + i)
+            console.log(cell.id, i, values[i]);
+            
+            cell.classList.remove('cross');
+            cell.classList.remove('zero');
+            if (values[i] == 'x') {
+                cell.classList.add("cross");
+            } else if (values[i] == 'o') {
+                cell.classList.add("zero");
+            } else {
+                cell.classList.remove('cross');
+                cell.classList.remove('zero');    
+            }
+        }
+    }
+
     // Обработчик изменения выбора размера доски
     function handleBoardSizeChange() {
         initializeBoard();
+        resetGame();
     }
 
     // Добавьте слушатель события для выпадающего списка
     const boardSizeSelect = document.getElementById("board-size");
     boardSizeSelect.addEventListener("change", handleBoardSizeChange);
 
-    // Инициализируем доску при загрузке страницы
-    initializeBoard();
-
-    function handleCellClick(event) {
+    function handleCellClick(event) {     
         const cell = event.target;
         const index = cell.getAttribute("data-index");
-        cell.classList.add("zero");
 
+        let xhr = new XMLHttpRequest();
+        xhr.open('GET', 'http://127.0.0.1:5000/step?position=' + index);
+        xhr.send();
+
+        // 4. Этот код сработает после того, как мы получим ответ сервера
+        xhr.onload = function() {
+            if (xhr.status == 200) {
+                values = JSON.parse(JSON.stringify(eval('({"values": ' + xhr.response + '})')))['values']
+                console.log(values)
+                updateBoard()
+            }
+        };
+        
+        cell.classList.add("cross");
+        PCScore++; 
+        updatePCScore();
     }
 
     board.addEventListener("click", handleCellClick);
 
-    // Функция обновления отображения статуса игры
-    function updateStatus(message) {
-        status.textContent = message;
+    function updatePlayer1Score() {
+        const player1ScoreElement = document.getElementById("player1-score");
+        player1ScoreElement.textContent = `You: ${player1Score}`;
     }
+    
+    function updatePCScore() {
+        const PCScoreElement = document.getElementById("PC-score");
+        PCScoreElement.textContent = `PC: ${PCScore}`;
+    }    
 
     function resetGame() {
+        let xhr = new XMLHttpRequest();
+        xhr.open('GET', 'http://127.0.0.1:5000/new_game');
+        xhr.send();
+
         const cells = document.querySelectorAll(".grid-cell");
         cells.forEach(function (cell) {
             cell.classList.remove("zero", "cross");
         });
+
+        player1Score = 0;
+        PCScore = 0;
+        updatePlayer1Score();
+        updatePCScore();
     }
 
     resetButton.addEventListener("click", resetGame);
-});
 
+});
