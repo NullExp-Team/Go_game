@@ -1,4 +1,7 @@
 var values = ['-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-']
+var invalids = []
+playerScore = 0
+computerScore = 0
 
 document.addEventListener("DOMContentLoaded", function () {
     const board = document.getElementById("game-board");
@@ -61,11 +64,15 @@ document.addEventListener("DOMContentLoaded", function () {
             
             cell.classList.remove('cross');
             cell.classList.remove('zero');
+            cell.classList.remove('block');    
             if (values[i] == 'x') {
                 cell.classList.add("cross");
             } else if (values[i] == 'o') {
                 cell.classList.add("zero");
             } else {
+                if (invalids.includes(i)) {
+                    cell.classList.add('block');
+                }
                 cell.classList.remove('cross');
                 cell.classList.remove('zero');    
             }
@@ -93,9 +100,15 @@ document.addEventListener("DOMContentLoaded", function () {
         // 4. Этот код сработает после того, как мы получим ответ сервера
         xhr.onload = function() {
             if (xhr.status == 200) {
-                values = JSON.parse(JSON.stringify(eval('({"values": ' + xhr.response + '})')))['values']
+                console.log(xhr.response)
+                values = JSON.parse(JSON.stringify(eval('(' + xhr.response + ')')))['X']
+                invalids = JSON.parse(JSON.stringify(eval('(' + xhr.response + ')')))['Y']
+                playerScore = JSON.parse(JSON.stringify(eval('(' + xhr.response + ')')))['Z']
+                computerScore = JSON.parse(JSON.stringify(eval('(' + xhr.response + ')')))['V']
                 console.log(values)
                 updateBoard()
+                updatePlayer1Score()
+                updatePCScore()
             }
         };
         
@@ -108,12 +121,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function updatePlayer1Score() {
         const player1ScoreElement = document.getElementById("player1-score");
-        player1ScoreElement.textContent = `You: ${player1Score}`;
+        player1ScoreElement.textContent = `You: ${playerScore}`;
     }
     
     function updatePCScore() {
         const PCScoreElement = document.getElementById("PC-score");
-        PCScoreElement.textContent = `PC: ${PCScore}`;
+        PCScoreElement.textContent = `PC: ${computerScore}`;
     }    
 
     function resetGame() {
@@ -123,11 +136,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const cells = document.querySelectorAll(".grid-cell");
         cells.forEach(function (cell) {
-            cell.classList.remove("zero", "cross");
+            cell.classList.remove("zero", "cross", "block");
         });
 
-        player1Score = 0;
-        PCScore = 0;
+        playerScore = 0;
+        computerScore = 0;
         updatePlayer1Score();
         updatePCScore();
     }

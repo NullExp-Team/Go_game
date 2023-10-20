@@ -1,5 +1,6 @@
 from swiplserver import PrologMQI, PrologThread, create_posix_path, prologmqi
 import flask
+import json
 
 from flask import Flask
 from flask import request
@@ -20,19 +21,17 @@ class Game:
         self.prolog.query(f'new_game.')
 
     def step(self, position):
-        print(f'bbb')
         try:
             self.prolog.query(f'play({position}).',3)
         except prologmqi.PrologQueryTimeoutError:
             pass
-        print(f'aaa')
 
         self.mqi = PrologMQI(password="aboba")
         self.prolog = self.mqi.create_thread()
         path = create_posix_path("/Users/delta-null/Documents/GitHub/Go_game/Computer vs Human (Single player).pl")
         self.prolog.query(f'consult("{path}").')
         self.prolog.query(f'read_file.')
-        self.prolog.query_async('state(X).', find_all=True)
+        self.prolog.query_async('state(X),invalid(Y),score1(Z),score2(V).', find_all=True)
         answer = self.prolog.query_async_result(5)
         print(f'ans: {answer}')
         return answer
@@ -49,7 +48,7 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 @cross_origin()
 def hello_world():
     pos = int(request.args.get('position'))
-    return game.step(pos)[0]['X']
+    return json.dumps(game.step(pos)[0])
 
 @app.route("/new_game")
 @cross_origin()

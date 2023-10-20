@@ -1,22 +1,40 @@
 :- dynamic(state/1).
 :- dynamic(invalid/1).
+:- dynamic(score1/1).
+:- dynamic(score2/1).
 
 new_game :-
     tell('state.txt'),
-    write('[-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-].'),
+    write('[-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-].'),
     told,
     
     tell('invalid.txt'),
     write('[].'),
+    told,
+
+    tell('score1.txt'),
+    write('0.'),
+    told,
+
+    tell('score2.txt'),
+    write('0.'),
     told.
 
-save_to_file(Board, Invalid_move) :-
+save_to_file(Board, Invalid_move, S1, S2) :-
     tell('state.txt'),
     write(Board),write('.'),
     told,
 
     tell('invalid.txt'),
     write(Invalid_move),write('.'),
+    told,
+
+    tell('score1.txt'),
+    write(S1),write('.'),
+    told,
+
+    tell('score2.txt'),
+    write(S2),write('.'),
     told.
 
 read_file :-
@@ -26,13 +44,22 @@ read_file :-
     
     open('invalid.txt', read, S2),
     read(S2, Line2),
-    assertz(invalid(Line2)).
+    assertz(invalid(Line2)),
+
+    open('score1.txt', read, S3),
+    read(S3, Line3),
+    write(Line3),
+    assertz(score1(Line3)),
+
+    open('score2.txt', read, S4),
+    read(S4, Line4),
+    assertz(score2(Line4)).
 
 play(Pos) :-
     nl,
     write('********************'), nl,
 	  write('* Prolog GO game *'), nl,
-	  write('********5x5 Board************'), nl, nl,
+	  write('********Board************'), nl, nl,
           game(Pos).
 
 game(Pos) :-
@@ -40,18 +67,16 @@ game(Pos) :-
 
 ask_player(Pos) :-
     read_file,
-    (state(Board); Board=[-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-]),
+    (state(Board); Board=[-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-]),
     (invalid(Invalid_move); Invalid_move=[]),
-    show_board(Board),nl,
-    S=0,
-    S1=0,
+    (score1(S); S=0),
+    (score2(S1); S1=0),
     move_player1(Board,S,S1,Invalid_move, Pos).
 
 move_player1(Board,S,S1,Invalid_move, Pos):-
       Player = x,
       replace(Board, Pos,Player, NextBoard),
-        save_to_file(NextBoard, Invalid_move),
-      show_board(NextBoard),
+    save_to_file(NextBoard, Invalid_move, S, S1),
       write('Player X :'),write(S),nl,write('Player O :'),write(S1),nl,
       Opponent=o,
       Counter=0,
@@ -67,7 +92,7 @@ move_player2(NextBoard,S,S1,Invalid_move):-
 
 
 check_winpose(Player,Opponent,Board,Counter,S,S1,Invalid_move):-
-     Counter < 25,
+     Counter < 64,
      nth0(Counter,Board,Y),
      Opp_list=[],
      Neighbour=[],
@@ -75,7 +100,7 @@ check_winpose(Player,Opponent,Board,Counter,S,S1,Invalid_move):-
     Counter1 is Counter+1,
     check_winpose(Player,Opponent,Board,Counter1,S,S1,Invalid_move);
     Opponent = o, move_player2(Board,S,S1,Invalid_move);
-    Opponent = x, save_to_file(Board, Invalid_move), sleep(5), halt.
+    Opponent = x, save_to_file(Board, Invalid_move, S, S1), sleep(5), halt.
 
 
 winpose(Y,Player, Opponent,Board,Pos,Opp_list,Neighbour,S,S1,Invalid_move):-
@@ -94,11 +119,11 @@ collect_Neighbour(Opponent,Board,Pos,Opp_list,Neighbour,S,S1,Invalid_move):-
     Z=false,
     add(Pos,Opp_list,New_Opp_list),
 
-    NU is Pos-5,
+    NU is Pos-8,
     limit_neighbour(NU,Neighbour, New_neighbour1),
     delete(New_neighbour1,Pos,Neb_List1),
 
-    ND is Pos+5,
+    ND is Pos+8,
     limit_neighbour(ND,Neb_List1, New_neighbour2),
     delete(New_neighbour2,Pos,Neb_List2),
 
@@ -115,17 +140,17 @@ collect_Neighbour(Opponent,Board,Pos,Opp_list,Neighbour,S,S1,Invalid_move):-
     check_neighbour_list(Opponent,Board,Opp_list,Neighbour,S,S1,Invalid_move).
 
 check_opp(Pos,Opponent,Board,Opp_list,Neighbour,Counter,S,S1,Invalid_move):-
-    Counter<25,
+    Counter<64,
     member_chk(Counter,Neighbour,X),
     X = true,
     nth0(Counter,Board,Y),
     is_mem(Y,Opponent,Board,Counter,Opp_list,Neighbour,S,S1,Invalid_move),
     Counter1 is Counter+1,
     check_opp(Pos,Opponent,Board,Opp_list,Neighbour,Counter1,S,S1,Invalid_move);
-    Counter<25,
+    Counter<64,
     Counter1 is Counter+1,
     check_opp(Pos,Opponent,Board,Opp_list,Neighbour,Counter1,S,S1,Invalid_move);
-    Counter=25,
+    Counter=64,
     check_neighbour_list(Opponent,Board,Opp_list,Neighbour,S,S1,Invalid_move).
 
 
@@ -159,15 +184,15 @@ remove_opponent(Counter,Len1 ,Opponent,Board,Opp_list,Neb_List,S,S1,Invalid_move
      L1=[M],
      append(L1,Invalid_move,Invalid_move_1),
     replace(Board,M,-, NextBoard),
+    save_to_file(NextBoard, Invalid_move_1, S, S1),
     Counter1 is Counter+1,
     remove_opponent(Counter1,Len1 ,Opponent,NextBoard,Opp_list,Neb_List,S,S1,Invalid_move_1);
      Counter=Len1,
  update_board(Opponent,Board,S,S1,Invalid_move).
 
 update_board(Opponent,Board,X,X2,Invalid_move):-
-     nl,show_board(Board),
-     Opponent = o,incr(X, X1),write('Player X :'),write(X1),nl,write('Player O :'),write(X2),nl, move_player2(Board,X1,X2,Invalid_move);
-    Opponent = x,incr(X2, X3),write('Player X :'),write(X),nl,write('Player O :'),write(X3),nl, save_to_file(Board, Invalid_move), sleep(5), halt.
+     Opponent = o,incr(X, X1),write('Player X :'),write(X1),nl,write('Player O :'),write(X2),nl, move_player2(Board,X1,X2,Invalid_move), save_to_file(Board, Invalid_move, X1, X2);
+    Opponent = x,incr(X2, X3),write('Player X :'),write(X),nl,write('Player O :'),write(X3),nl, save_to_file(Board, Invalid_move, X, X3), sleep(5), halt.
 
 incr(X, X1) :-
     X1 is X+1
@@ -195,27 +220,27 @@ len([_|Y], LenResult):-
 
 limit_neighbour(N,Neighbour, New_neighbour):-
     N> -1,
-    N<25,
+    N<64,
     L=[N],
     append(L,Neighbour, New_neighbour);New_neighbour=Neighbour.
 
 limit_neighbour1(Pos,N,Neighbour, New_neighbour):-
-    List=[4,9,14,19,24],
+    List=[7,15,23,31,39, 47, 55, 63],
     memberchk(Pos,List),
     New_neighbour=Neighbour;
 
     N> -1,
-    N<25,
+    N<64,
     L=[N],
     append(L,Neighbour, New_neighbour).
 
 limit_neighbour2(Pos,N,Neighbour, New_neighbour):-
-    List=[0,5,10,15,20],
+    List=[0,8,16,24,32,40, 48, 56],
     memberchk(Pos,List),
     New_neighbour=Neighbour;
 
     N> -1,
-    N<25,
+    N<64,
     L=[N],
     append(L,Neighbour, New_neighbour).
 
@@ -248,7 +273,7 @@ show2(X, I) :-
 
 
 check_winpose_1(Player,Opponent,Board,Counter,S,S1,Invalid_move):-
-     Counter < 25,
+     Counter < 64,
      nth0(Counter,Board,Y),
      Opp_list=[],
      Neighbour=[],
@@ -274,10 +299,10 @@ collect_Neighbour_1(Opponent,Board,Pos,Opp_list,Neighbour,S,S1,Invalid_move):-
     Z=false,
     add(Pos,Opp_list,New_Opp_list),
 
-    NU is Pos-5,
+    NU is Pos-8,
     limit_neighbour(NU,Neighbour, New_neighbour1),
     delete(New_neighbour1,Pos,Neb_List1),
-    ND is Pos+5,
+    ND is Pos+8,
 
     limit_neighbour(ND,Neb_List1, New_neighbour2),
     delete(New_neighbour2,Pos,Neb_List2),
@@ -296,7 +321,7 @@ collect_Neighbour_1(Opponent,Board,Pos,Opp_list,Neighbour,S,S1,Invalid_move):-
     check_neighbour_list_1(Opponent,Board,Opp_list,Neighbour,S,S1,Invalid_move).
 
 check_opp_1(Pos,Opponent,Board,Opp_list,Neighbour,Counter,S,S1,Invalid_move):-
-    Counter<25,
+    Counter<64,
 
     member_chk(Counter,Neighbour,X),
     X = true,
@@ -304,10 +329,10 @@ check_opp_1(Pos,Opponent,Board,Opp_list,Neighbour,Counter,S,S1,Invalid_move):-
     is_mem_1(Y,Opponent,Board,Counter,Opp_list,Neighbour,S,S1,Invalid_move),
     Counter1 is Counter+1,
     check_opp_1(Pos,Opponent,Board,Opp_list,Neighbour,Counter1,S,S1,Invalid_move);
-    Counter<25,
+    Counter<64,
    Counter1 is Counter+1,
     check_opp_1(Pos,Opponent,Board,Opp_list,Neighbour,Counter1,S,S1,Invalid_move);
-    Counter=25,
+    Counter=64,
     check_neighbour_list_1(Opponent,Board,Opp_list,Neighbour,S,S1,Invalid_move).
 
 
@@ -363,17 +388,14 @@ move_player_2(NextBoard,S,S1,Pos,Invalid_move):-
       write(Pos),nl,
       Player = o,
       replace(NextBoard, Pos, Player, Board),
-      save_to_file(Board, Invalid_move),
-      state(BBB),
-        write(BBB),
-      show_board(Board),
+      save_to_file(Board, Invalid_move, S, S1),
       write('Player X :'),write(S),nl,write('Player O :'),write(S1),nl,
       Opponent=x,
       Counter=0,
       check_winpose(Player,Opponent,Board,Counter,S,S1,Invalid_move).
 
 check_winpose_2(Player,Opponent,Board,Counter,S,S1,Invalid_move):-
-     Counter < 25,
+     Counter < 64,
      nth0(Counter,Board,Y),
      Opp_list=[],
      Neighbour=[],
@@ -397,10 +419,10 @@ collect_Neighbour_2(Opponent,Board,Pos,Opp_list,Neighbour,S,S1,Invalid_move):-
     member_chk(Pos,Neighbour,Z),
     Z=false,
     add(Pos,Opp_list,New_Opp_list),
-    NU is Pos-5,
+    NU is Pos-8,
     limit_neighbour(NU,Neighbour, New_neighbour1),
     delete(New_neighbour1,Pos,Neb_List1),
-    ND is Pos+5,
+    ND is Pos+8,
     limit_neighbour(ND,Neb_List1, New_neighbour2),
     delete(New_neighbour2,Pos,Neb_List2),
     NL is Pos-1,
@@ -416,7 +438,7 @@ collect_Neighbour_2(Opponent,Board,Pos,Opp_list,Neighbour,S,S1,Invalid_move):-
     check_neighbour_list_2(Opponent,Board,Opp_list,Neighbour,S,S1,Invalid_move).
 
 check_opp_2(Pos,Opponent,Board,Opp_list,Neighbour,Counter,S,S1,Invalid_move):-
-    Counter<25,
+    Counter<64,
 
     member_chk(Counter,Neighbour,X),
     X = true,
@@ -425,10 +447,10 @@ check_opp_2(Pos,Opponent,Board,Opp_list,Neighbour,Counter,S,S1,Invalid_move):-
     is_mem_2(Y,Opponent,Board,Counter,Opp_list,Neighbour,S,S1,Invalid_move),
     Counter1 is Counter+1,
     check_opp_2(Pos,Opponent,Board,Opp_list,Neighbour,Counter1,S,S1,Invalid_move);
-    Counter<25,
+    Counter<64,
    Counter1 is Counter+1,
     check_opp_2(Pos,Opponent,Board,Opp_list,Neighbour,Counter1,S,S1,Invalid_move);
-    Counter=25,
+    Counter=64,
     check_neighbour_list_2(Opponent,Board,Opp_list,Neighbour,S,S1,Invalid_move).
 
 is_mem_2(Y,Opponent,Board,Mem,Opp_list,Neighbour,S,S1,Invalid_move):-
