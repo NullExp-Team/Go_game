@@ -32,3 +32,28 @@ block_regions(X, [], X).
 block_regions(Board, [H|T], NewBoard) :-
     replace(Board, H, #, BlockedBoard),
     block_regions(BlockedBoard, T, NewBoard), !.
+
+is_need_check_cell(Board, Size, Index, Value) :-
+    LeftIndex is Index - 1,
+    Value in Board at LeftIndex;
+
+    RightIndex is Index + 1,
+    Value in Board at RightIndex;
+
+    TopIndex is Index - Size,
+    Value in Board at TopIndex;
+
+    BottomIndex is Index + Size,
+    Value in Board at BottomIndex;
+
+    TopLeftIndex is Index - Size - 1,
+    Value in Board at TopLeftIndex;
+
+    TopRightIndex is Index - Size + 1,
+    Value in Board at TopRightIndex;
+
+    BottomLeftIndex is Index + Size - 1,
+    Value in Board at BottomLeftIndex;
+
+    BottomRightIndex is Index + Size + 1,
+    Value in Board at BottomRightIndex.

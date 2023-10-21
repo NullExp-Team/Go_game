@@ -13,7 +13,7 @@ is_cell_board(Board, CellIndex, RegionValue) :-
 
 is_cell_region(Board, Size, CellIndex, RegionValue, BlockedCells) :-
     notrace(RegionValue in Board at CellIndex),
-    not(CellIndex in BlockedCells at _),
+    not(member(CellIndex, BlockedCells)),
 
     append([CellIndex], BlockedCells, NextBlocked), !,
     LeftCellPosition is CellIndex - 1,
@@ -44,7 +44,6 @@ regions(Board, Size, RegionCells, Value, Index) :-
 regions(Board, Size, RegionCells, Value, Index) :-
     CellsCount is Size * Size,
     Index < CellsCount,
-    not(is_cell_region(Board, Size, Index, Value, [])),
     NextIndex is Index + 1,
     regions(Board, Size, RegionCells, Value, NextIndex), !.
 

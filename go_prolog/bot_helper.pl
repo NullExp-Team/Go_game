@@ -2,39 +2,7 @@
 :- ['standart_helper'].
 :- ['region_helper'].
 
-:- dynamic(difficulty/1).
-:- dynamic(mode/2).
 
-difficulty(4).
-
-% deep_koeficient(Deep, K) :-
-%     K is 1, !.
-
-deep_koeficient(Deep, K) :-
-    difficulty(Difficulty),
-    Deep is Difficulty,
-    K is 1, !.
-
-deep_koeficient(Deep, K) :-
-    difficulty(Difficulty),
-    Deep is Difficulty - 1,
-    K is 0.5, !.
-
-deep_koeficient(Deep, K) :-
-    difficulty(Difficulty),
-    Deep is Difficulty - 2,
-    K is 0.25, !.
-
-deep_koeficient(Deep, K) :-
-    difficulty(Difficulty),
-    Deep < Difficulty - 2,
-    K is 0, !.
-
-
-
-bot_step(Board, Size, Step) :-
-    difficulty(Difficulty),
-    collect_steps_statistics(Board, Size, Difficulty, Statistics).
 
 collect_steps_statistics(_, Size, _, [], Iterator) :-
     BoardCellsCount is Size * Size,
@@ -44,13 +12,19 @@ collect_steps_statistics(Board, Size, Difficulty, Statistics, Iterator) :-
     not(- in Board at Iterator),
     NextIterator is Iterator + 1,
     collect_steps_statistics(Board, Size, Difficulty, NextStatistics, NextIterator),
-    append([x], NextStatistics, Statistics), !.
+    append([-], NextStatistics, Statistics), !.
 
 collect_steps_statistics(Board, Size, Difficulty, Statistics, Iterator) :-
+    is_need_check_cell(Board, Size, Iterator, o),
     calculate_statistics(Board, Size, Iterator, Difficulty, Stat, false),
     NextIterator is Iterator + 1,
     collect_steps_statistics(Board, Size, Difficulty, NextStatistics, NextIterator),
     append([Stat], NextStatistics, Statistics), !.
+
+collect_steps_statistics(Board, Size, Difficulty, Statistics, Iterator) :-
+    NextIterator is Iterator + 1,
+    collect_steps_statistics(Board, Size, Difficulty, NextStatistics, NextIterator),
+    append([0], NextStatistics, Statistics), !.
 
 collect_steps_statistics(Board, Size, Difficulty, Statistics) :-
     collect_steps_statistics(Board, Size, Difficulty, Statistics, 0).
@@ -66,13 +40,19 @@ collect_steps_statistics_after_player_step(Board, Size, Difficulty, Statistics, 
     not(- in Board at Iterator),
     NextIterator is Iterator + 1,
     collect_steps_statistics_after_player_step(Board, Size, Difficulty, NextStatistics, NextIterator),
-    append([x], NextStatistics, Statistics), !.
+    append([-], NextStatistics, Statistics), !.
 
 collect_steps_statistics_after_player_step(Board, Size, Difficulty, Statistics, Iterator) :-
+    is_need_check_cell(Board, Size, Iterator, x),
     calculate_statistics(Board, Size, Iterator, Difficulty, Stat, true),
     NextIterator is Iterator + 1,
     collect_steps_statistics_after_player_step(Board, Size, Difficulty, NextStatistics, NextIterator),
     append([Stat], NextStatistics, Statistics), !.
+
+collect_steps_statistics_after_player_step(Board, Size, Difficulty, Statistics, Iterator) :-
+    NextIterator is Iterator + 1,
+    collect_steps_statistics_after_player_step(Board, Size, Difficulty, NextStatistics, NextIterator),
+    append([0], NextStatistics, Statistics), !.
 
 collect_steps_statistics_after_player_step(Board, Size, Difficulty, Statistic) :-
     collect_steps_statistics_after_player_step(Board, Size, Difficulty, Statistic, 0).
@@ -82,7 +62,6 @@ collect_steps_statistics_after_player_step(Board, Size, Difficulty, Statistic) :
 calculate_statistics(_, _, _, 0, 0, _) :- !.
 calculate_statistics(Board, Size, Step, Difficulty, Statistic, IsPlayerMove) :-
     not(IsPlayerMove),
-
     replace(Board, Step, o, BoardAfterStep),
     computer_regions(BoardAfterStep, Size, CopmuterRegions),
     block_regions(BoardAfterStep, CopmuterRegions, BoardAfterComputerRegionsBlock),
@@ -96,8 +75,7 @@ calculate_statistics(Board, Size, Step, Difficulty, Statistic, IsPlayerMove) :-
 
     statistics_sum(NextStatistics, Sum),
 
-    deep_koeficient(Difficulty, K),
-    Statistic is K * (PlusPoints - MinusPoints) + Sum, !.
+    Statistic is PlusPoints - MinusPoints + Sum, !.
 
 calculate_statistics(Board, Size, Step, Difficulty, Statistic, IsPlayerMove) :-
     IsPlayerMove,
@@ -115,15 +93,4 @@ calculate_statistics(Board, Size, Step, Difficulty, Statistic, IsPlayerMove) :-
 
     statistics_sum(NextStatistics, Sum),
 
-    deep_koeficient(Difficulty, K),
-    Statistic is K * (PlusPoints - MinusPoints) + Sum, !.
-
-statistics_sum([], 0).
-
-statistics_sum([H|T], Sum) :-
-    H = x,
-    statistics_sum(T, Sum), !.
-
-statistics_sum([H|T], Sum) :-
-    statistics_sum(T, NextSum),
-    Sum is NextSum + H.
+    Statistic is PlusPoints - MinusPoints + Sum, !.
