@@ -1,16 +1,129 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="stylesheet" href="style.css">
-        <title>Китайская Го</title>
-    </head>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Go game</title>
 
-    <body>
-        <div class="board">
+    <!-- кнопки, бординг и линии -->
+    <link rel="stylesheet"
+          href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
+          integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
+          crossorigin="anonymous">
+
+    <!-- для красивого текста -->
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300' rel='stylesheet' type='text/css'>
+
+    <!-- для стрелки -->
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"> 
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.min.js"></script>
+
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="app" v-cloak>
+      <div class="container">
+
+        <div class="row top-buffer">
+
+          <div class="col">
+            <table style="border: 10px solid #533939; background: #e8b060">
+              <tbody>
+                <tr v-for="row in (0, num_rows)">
+                  <td v-for="col in (0, num_cols)">
+                    <div @mouseover="mouse_over(col, row)"
+                         @mouseout="mouse_out(col, row)"
+                         @click="click(col, row)">
+                      <svg width="30" height="30">
+                        <g>
+                          <rect x="0" y="0" width="30" height="30" fill="#e8b060" />
+                        </g>
+                        <board-grid :col="col" :row="row" :num_cols="num_cols" :num_rows="num_rows"></board-grid>
+                        <stone v-if="board[[col, row]] == 0"
+                               :cx="15.0"
+                               :cy="15.0"
+                               :opacity="shadow_opacity[[col, row]]"
+                               :fill="color(color_current_move)"></stone>
+                        <stone-shadow v-if="board[[col, row]] > 0"
+                                      :cx="18.0" :cy="18.0"></stone-shadow>
+                        <stone v-if="board[[col, row]] > 0"
+                               :cx="15.0"
+                               :cy="15.0"
+                               :opacity="1.0"
+                               :fill="color(board[[col, row]])"></stone>
+                      </svg>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div> <!-- board -->
+
+          <div class="col">
+            <p>
+              Размер игрового поля:
+            </p>
+
+            <div class="form-group">
+                 <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" id="radio_9" value="9" v-model="board_size" checked="">
+                  <label class="form-check-label" for="radio_9">9x9</label>
+                </div>
+
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" id="radio_11" value="11" v-model="board_size">
+                  <label class="form-check-label" for="radio_11">11x11</label>
+                </div>
+
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" id="radio_19" value="19" v-model="board_size">
+                  <label class="form-check-label" for="radio_19">19x19</label>
+                </div>
+            </div>
+            
+            <div class="form-group">
+              <button v-on:click="reset" type="button" class="btn btn-xs btn-success btn-file">Рестарт игры</button>
+            </div>
+
+            <div class="form-group">
+              <div class="custom-control custom-switch">
+                <input type="checkbox" class="custom-control-input" id="score_checkbox" checked="" v-model="show_score">
+                <label class="custom-control-label" for="score_checkbox">
+                  Показать результат
+                  (<a href="https://ufgo.org/Rules9x9/Go%20Rules%209x9.htm" target="_blank">правила игры</a>)
+                </label>
+              </div>
+            </div>
+            <table>
+              <tbody>
+                <tr v-for="i in num_colors">
+                  <td>
+                    <div v-if="i == color_current_move">
+                      <i class="fa fa-arrow-right fa-fw"></i>
+                    </div>
+                  </td>
+                  <td style="background: #e8b060">
+                    <svg width="30" height="30">
+                      <stone :cx="15.0"
+                             :cy="15.0"
+                             :opacity="1.0"
+                             :fill="color(i)"></stone>
+                    </svg>
+                  </td>
+                  <td v-if="show_score">
+                    &nbsp; {{ score[i] }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+          </div>
         </div>
-        <script src="script.js"></script>
-    </body>
 
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
 </html>
