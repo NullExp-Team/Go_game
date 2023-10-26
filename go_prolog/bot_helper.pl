@@ -15,7 +15,7 @@ collect_steps_statistics(Board, Size, Difficulty, Statistics, Iterator) :-
     append([-], NextStatistics, Statistics), !.
 
 collect_steps_statistics(Board, Size, Difficulty, Statistics, Iterator) :-
-    is_need_check_cell(Board, Size, Iterator, o),
+    is_need_check_cell(Board, Size, Iterator, x),
     calculate_statistics(Board, Size, Iterator, Difficulty, Stat, false),
     NextIterator is Iterator + 1,
     collect_steps_statistics(Board, Size, Difficulty, NextStatistics, NextIterator),
@@ -24,7 +24,7 @@ collect_steps_statistics(Board, Size, Difficulty, Statistics, Iterator) :-
 collect_steps_statistics(Board, Size, Difficulty, Statistics, Iterator) :-
     NextIterator is Iterator + 1,
     collect_steps_statistics(Board, Size, Difficulty, NextStatistics, NextIterator),
-    append([0], NextStatistics, Statistics), !.
+    append([-], NextStatistics, Statistics), !.
 
 collect_steps_statistics(Board, Size, Difficulty, Statistics) :-
     collect_steps_statistics(Board, Size, Difficulty, Statistics, 0).
@@ -43,7 +43,7 @@ collect_steps_statistics_after_player_step(Board, Size, Difficulty, Statistics, 
     append([-], NextStatistics, Statistics), !.
 
 collect_steps_statistics_after_player_step(Board, Size, Difficulty, Statistics, Iterator) :-
-    is_need_check_cell(Board, Size, Iterator, x),
+    is_need_check_cell(Board, Size, Iterator, o),
     calculate_statistics(Board, Size, Iterator, Difficulty, Stat, true),
     NextIterator is Iterator + 1,
     collect_steps_statistics_after_player_step(Board, Size, Difficulty, NextStatistics, NextIterator),
@@ -52,14 +52,14 @@ collect_steps_statistics_after_player_step(Board, Size, Difficulty, Statistics, 
 collect_steps_statistics_after_player_step(Board, Size, Difficulty, Statistics, Iterator) :-
     NextIterator is Iterator + 1,
     collect_steps_statistics_after_player_step(Board, Size, Difficulty, NextStatistics, NextIterator),
-    append([0], NextStatistics, Statistics), !.
+    append([-], NextStatistics, Statistics), !.
 
 collect_steps_statistics_after_player_step(Board, Size, Difficulty, Statistic) :-
     collect_steps_statistics_after_player_step(Board, Size, Difficulty, Statistic, 0).
 
 
 
-calculate_statistics(_, _, _, 0, 0, _) :- !.
+calculate_statistics(_, _, _, 0, [0,0], _) :- !.
 calculate_statistics(Board, Size, Step, Difficulty, Statistic, IsPlayerMove) :-
     not(IsPlayerMove),
     replace(Board, Step, o, BoardAfterStep),
@@ -73,9 +73,11 @@ calculate_statistics(Board, Size, Step, Difficulty, Statistic, IsPlayerMove) :-
     NextDifficulty is Difficulty - 1,
     collect_steps_statistics_after_player_step(BoardAfterPlayerRegionsBlock, Size, NextDifficulty, NextStatistics), !,
 
-    statistics_sum(NextStatistics, Sum),
+    statistics_sum(NextStatistics, [SumC, SumP]),
 
-    Statistic is PlusPoints - MinusPoints + Sum, !.
+    ValueC is PlusPoints + SumC,
+    ValueP is MinusPoints + SumP,
+    Statistic = [ValueC, ValueP], !.
 
 calculate_statistics(Board, Size, Step, Difficulty, Statistic, IsPlayerMove) :-
     IsPlayerMove,
@@ -91,6 +93,8 @@ calculate_statistics(Board, Size, Step, Difficulty, Statistic, IsPlayerMove) :-
     NextDifficulty is Difficulty - 1,
     collect_steps_statistics(BoardAfterComputerRegionsBlock, Size, NextDifficulty, NextStatistics), !,
 
-    statistics_sum(NextStatistics, Sum),
+    statistics_sum(NextStatistics, [SumC, SumP]),
 
-    Statistic is PlusPoints - MinusPoints + Sum, !.
+    ValueC is PlusPoints + SumC,
+    ValueP is MinusPoints + SumP,
+    Statistic = [ValueC, ValueP], !.

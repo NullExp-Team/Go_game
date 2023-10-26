@@ -17,7 +17,7 @@ generate_empty_board(Size, Board) :-
 
 show_board([], _, _) :- !.
 show_board([H|T], Size, Iterator) :-
-    (0 is Iterator mod Size, write(H),write(' '), nl) or write(H), write(' '),
+    (0 is Iterator mod Size, write(H), write(' '), nl, !; write(H), write(' '), !),
     NextIterator is Iterator + 1,
     show_board(T, Size, NextIterator), !.
 show_board(Board, Size) :-
