@@ -190,6 +190,11 @@ button:hover{
     text-align: center;
 }
 
+.grid-cell.highlight {
+    background-color: rgb(255, 162, 0);
+    transition: background-color 0.5s;
+}
+
 #made-by {
     position: fixed;
     bottom: 10px;

@@ -109,11 +109,20 @@ document.addEventListener("DOMContentLoaded", function () {
                 console.log(values)
                 updateBoard()
                 updatePlayer1Score()
+                cell.classList.add("highlight");
+                setTimeout(() => {
+                    cell.classList.remove("highlight");
+                }, 2000);
                 updatePCScore()
             }
         };
         
         cell.classList.add("cross");
+        cell.classList.add("highlight");
+        setTimeout(() => {
+            cell.classList.remove("highlight");
+        }, 2000);
+
         PCScore++; 
         updatePCScore();
     }
